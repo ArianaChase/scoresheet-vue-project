@@ -1,6 +1,6 @@
 # scoresheet-vue
 
-This template should help get you started developing with Vue 3 in Vite.
+Upload an xlsx file, select students, select subjects, see results and average
 
 ## Recommended IDE Setup
 
