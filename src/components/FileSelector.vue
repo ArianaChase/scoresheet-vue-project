@@ -5,19 +5,26 @@ import { defineEmits, defineProps } from 'vue';
 import Handsontable from 'handsontable';
 
 
-
-const emit = defineEmits(['update-students'])
+const emit = defineEmits(['update-students', 'send-excel-data']) //update-students is emitted every time the rowToObj function is completed, and triggers the studentList to update
 const props = defineProps({
     studentList: {
+        type: Object,
+        required: true
+    },
+    changesList: {
         type: Object,
         required: true
     }
 });
 
-const fileInput = ref();
-const hotElement = ref();
-const hot = ref();
+//const triggerUpdateChangesList = (data) => {
+    //emit('update-changes-list', data)
+//}
+
 const originalFile = ref();
+const hot = ref();
+const hotElement = ref();
+const fileInput = ref();
 
 //const rowtext = ref("e");
 const handleFileUpload = (event) => {
@@ -30,6 +37,9 @@ const handleFileUpload = (event) => {
     reader.onload = (e) => { //after reading the file... (e = the results of reading)
     const data = new Uint8Array(e.target.result); //changing results into readable form
     const workbook = XLSX.read(data, { type: 'array' }); //part 2 of above
+    //emit("send-excel-data", workbook)
+    
+    console.log(workbook)
     const sheetName = workbook.SheetNames[0];
     const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
 
@@ -42,7 +52,7 @@ const handleFileUpload = (event) => {
     for (let x = 1; x <= range.e.r; ++x) {
         rowToObject(workbook.Sheets.Table, x)
     }
-
+    
     //console.log(range.e.c)
     if (hot.value) {
       hot.value.destroy();
@@ -57,9 +67,12 @@ const handleFileUpload = (event) => {
       contextMenu: true,
       licenseKey: 'non-commercial-and-evaluation'
     });
-
+    
+    
     };
     reader.readAsArrayBuffer(file);
+    
+    
 };
 
 const rowToObject = (sheet, rowIndex)=> {
@@ -82,7 +95,7 @@ const rowToObject = (sheet, rowIndex)=> {
         const header = headers[C];
         row[header] = sheet[cellRef] ? sheet[cellRef].v : undefined;
     }
-
+    console.log(row)
     
 
     emit('update-students', row)
