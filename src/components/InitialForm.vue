@@ -6,31 +6,30 @@ import { defineEmits, defineProps } from 'vue';
 import FileHandler from './FileHandler.vue';
 import router from '@/router';
 import { useRouter, useRoute } from 'vue-router'; 
+import { useStore } from '@/stores/store.js';
+import { storeToRefs } from 'pinia'
 
-const route = useRoute()
+const store = useStore()
 
 defineOptions({
   inheritAttrs: false
 })
 
-const props = defineProps({
-    studentList: {
-        type: Object,
-        required: true
-    },
-    changesList: {
-        type: Object,
-        required: true
-    }
-})
+
 const emits = defineEmits(['update-changes-list', 'update-students', 'push-changes-to-studentList', 'go-to-results-page'])
 const studentName = ref();
 const subjectSelect = ref();
 const scoreField = ref();
-const workbook = ref();
+const { workbook } = storeToRefs(store);
 const hot = ref();
 const hotElement = ref();
 const sheet = ref();
+const studentList = store.studentList
+const sheetName = ref();
+const noFileErrorMsg = ref(false)
+const { fileUploaded } = storeToRefs(store)
+
+console.log(fileUploaded.value)
 
 const change = reactive({
     name: studentName,
@@ -40,33 +39,57 @@ const change = reactive({
 
 const sendExcelData = (data) => {
     workbook.value = data
-    const sheetName = workbook.value.SheetNames[0]
+    sheetName.value = workbook.value.SheetNames[0]
     sheet.value = XLSX.utils.sheet_to_json(workbook.value.Sheets[sheetName], { header: 1 });
+    store.$patch({
+        workbook: workbook
+    })
 }
 
 const onAddClick = () => {
-    emits('update-changes-list', change)
+    console.log(fileUploaded.value)
+    if (fileUploaded.value == true) {
+        store.updateChangesList(change)
+        noFileErrorMsg.value = false
+        console.log(noFileErrorMsg.value)
+    } else {
+        noFileErrorMsg.value = true
+        console.log(noFileErrorMsg.value)
+
+    }
+    
 }    
 
 const onDoneClick = () => {
     try {
-    updateExcel(),
-    console.log('Emitting event'); // Add this line
-    emits('push-changes-to-studentList', 'go-to-results-page')
-    router.push({ name: 'results'})
-    } catch (error) {
+        if (fileUploaded.value == true) {
+        updateExcel(),
+        store.pushChangesToStudentList()
+        router.push({ name: 'results'})
+        noFileErrorMsg.value = false
+        console.log(noFileErrorMsg.value)
+    } else {
+        noFileErrorMsg.value = true
+        console.log(noFileErrorMsg.value)
+
+    }} catch (error) {
         console.log('error PUSHCHANGES in initial form', error)
     }
 }
 
 const updateExcel = () => {
+    console.log('updated Excel')
     //console.log(sheet.value)
-    const changesList = props.changesList
+    const changesList = store.changesList
+    const sheetName = workbook.value.SheetNames[0]
+    const sheet = XLSX.utils.sheet_to_json(workbook.value.Sheets[sheetName], { header: 1 });
+    
     for (let x = 0; x < changesList.length; x++) {
-        console.log(changesList[x].name)
-        const exists = props.studentList.some(obj => obj.name === changesList[x].name);
+        //console.log(changesList[x].name)
+        const exists = studentList.some(obj => obj.name === changesList[x].name);
     
         if (exists == false) {
+            //console.log('we made it to exists == false')
             const rowData = ref(['','','',''])
             rowData.value[0] = changesList[x].name
     
@@ -80,52 +103,41 @@ const updateExcel = () => {
             } else if (changesList[x].subject == "History") {
                 rowData.value[3] = changesList[x].score
             }
-            sheet.value.push(rowData.value)
-        } else {
-            const dupeArray = sheet.value.findIndex(arr => arr.includes(changesList[x].name)); //iterates over the array and finds the array that includes 'henry'
-        
+            sheet.push(rowData.value)
+            //console.log(rowData.value)
+    } else {
+            console.log(sheet)
+            const dupeArray = sheet.findIndex(arr => arr.includes(changesList[x].name)); //iterates over the array and finds the array that includes 'henry'
             if (changesList[x].subject == "English") {
-                sheet.value[dupeArray][1] = changesList[x].score
+                sheet[dupeArray][1] = changesList[x].score
             } else if (changesList[x].subject == "Math") {
-                sheet.value[dupeArray][1] = changesList[x].score
+                sheet[dupeArray][1] = changesList[x].score
             } else if (changesList[x].subject == "History") {
-                sheet.value[dupeArray][1] = changesList[x].score
+                sheet[dupeArray][1] = changesList[x].score
             }
-        }
-
     }
+    //console.log(sheet)
+
+    } 
+    workbook.value.Sheets[sheetName] = XLSX.utils.json_to_sheet(sheet);
+    console.log(workbook.value)
+    store.$patch({
+        workbook: workbook
+    })
 }
-
-const triggerUpdateStudents = (data) => {
-    try { 
-        //console.log(data)
-        emits('update-students', data)
-    } catch (error) {
-        console.log('error in initial form')
-    }
-}
-
-
-
-//const triggerUpdateStudents3 = () => {
-   // for (let C = 0; C <= rows.value.length; ++C) {
-     //  emit('update-students', rows.value[C])
-   /// }
-//}
-
-
 
 </script>
 
 <template>
     <div>
-        <FileHandler @send-excel-data="sendExcelData" @trigger-update-students="triggerUpdateStudents" :studentList="props.studentList" />
+        <FileHandler @send-excel-data="sendExcelData" />
     </div>
     <div ref="hotElement"></div>
     <div>
         <h1>Add/Edit Students' grades</h1>
             <span>Student Name: </span>
         <input type="text" v-model="studentName">
+        <span v-if="studentName == ''" class="errorMsg"> Please enter a name</span>
         <br>
         <span>Target Subject: </span>
         <select v-model="subjectSelect">
@@ -137,7 +149,7 @@ const triggerUpdateStudents = (data) => {
         <br>
         <span>Score: </span>
         <input type="number" max="100" min="0" v-model="scoreField">
-        <span v-if="scoreField > 100" class="errorMsg"> Please enter a valid score</span>
+        <span v-if="scoreField > 100 || typeof scoreField === 'string'" class="errorMsg"> Please enter a valid score</span>
     </div>
     <div class="h-alignment">
         <button class="button" @click="onAddClick">Add</button>
@@ -145,6 +157,7 @@ const triggerUpdateStudents = (data) => {
             <button class="button" @click="onDoneClick">Done</button>
         </div>
     </div>
+    <p v-show="noFileErrorMsg" class="errorMsg">Please upload a file!</p>
 </template>
 
 

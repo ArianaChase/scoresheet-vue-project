@@ -3,36 +3,37 @@ import { ref } from 'vue';
 import * as XLSX from 'xlsx';
 import { defineEmits, defineProps } from 'vue';
 import Handsontable from 'handsontable';
+import { useStore } from '@/stores/store.js';
+import { storeToRefs } from 'pinia'
 
-const emit = defineEmits(['trigger-update-students', 'send-excel-data']) //update-students is emitted every time the rowToObj function is completed, and triggers the studentList to update
-const props = defineProps({
-    studentList: {
-        type: Object,
-        required: true
-    }
-});
+const store = useStore()
 
+const emit = defineEmits(['send-excel-data']) //update-students is emitted every time the rowToObj function is completed, and triggers the studentList to update
+
+const studentList = store.studentList
+const {e, fileUploaded} = storeToRefs(store)
 const hot = ref();
 const hotElement = ref();
 
+
 const handleFileUpload = (event) => {
-    props.studentList.length = 0
+    fileUploaded.value = true
+    studentList.length = 0
 
     const file = event.target.files[0];
     const reader = new FileReader();
 
     reader.onload = (e) => { //after reading the file... (e = the results of reading)
     const data = new Uint8Array(e.target.result); //changing results into readable form
-    const workbook = XLSX.read(data, { type: 'array' }); //part 2 of above
-    emit('send-excel-data', workbook);
+    const ogWorkbook = XLSX.read(data, { type: 'array' }); //part 2 of above
+    console.log(ogWorkbook)
+    emit('send-excel-data', ogWorkbook);
 
-    //console.log(workbook)
-    const sheetName = workbook.SheetNames[0];
-    const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
-    const range = XLSX.utils.decode_range(workbook.Sheets.Table['!ref']); 
+    //console.log(ogWorkbook)
+    const range = XLSX.utils.decode_range(ogWorkbook.Sheets.Table['!ref']); 
 
     for (let x = 1; x <= range.e.r; ++x) {
-        rowToObject(workbook.Sheets.Table, x)
+        rowToObject(ogWorkbook.Sheets.Table, x)
 
     }
     
@@ -64,7 +65,7 @@ const rowToObject = (sheet, rowIndex)=> {
         row[header] = sheet[cellRef] ? sheet[cellRef].v : undefined;
     }
     //console.log(row)
-    emit('trigger-update-students', row)
+    store.updateStudents(row)
 } catch (error) {
     console.log('error in filehandler')
 }

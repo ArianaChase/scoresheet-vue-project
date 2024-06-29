@@ -1,6 +1,5 @@
 <script setup>
 import { ref, reactive } from 'vue'
-import FileSelector from '@/components/FileSelector.vue';
 import StudentSelector from '@/components/StudentSelector.vue';
 import SubjectSelector from '@/components/SubjectSelector.vue';
 import { RouterLink } from 'vue-router';
@@ -8,96 +7,12 @@ import DisplayResults from '@/components/DisplayResults.vue';
 import StudentItem from '@/components/StudentItem.vue';
 import InitialForm from '@/components/InitialForm.vue';
 import * as XLSX from 'xlsx';
+import { useStore } from '@/stores/store.js';
+import { storeToRefs } from 'pinia'
 
-
-const studentList = reactive([]);
-const changesList = reactive([])
-
-const updateStudents = (row) => {
-  //console.log(row)
-  studentList.push({
-    id: studentList.length + 1,
-    name: row.name,
-    subjects: [
-      {
-        subject: 'eng', 
-        score: row.eng,
-        subIsChecked: false
-      },
-      {
-        subject: 'history', 
-        score: row.history,
-        subIsChecked: false
-      },
-      {
-        subject: 'math',
-        score: row.math,
-        subIsChecked: false
-      }
-    ],
-    isChecked: false
-  })
-  //console.log(studentList.length)
-  //console.log(studentList[0])
-  //console.log(studentList[0].subjects)
-};
-
-
-const updateChangesList = (changeObj) => {
-  changesList.push({
-    name: changeObj.name,
-    subject: changeObj.subject,
-    score: changeObj.score
-  })
-
-
-}
-
-const pushChangesToStudentList = () => {
-  console.log('pushed change successfully')
-  console.log("changesList: ", changesList)
-  for (let x = 0; x < changesList.length; x++) {
-    const stuName = changesList[x].name
-    studentList.push({
-      id: studentList.length + 1,
-      name: stuName,
-      subjects: [
-      {
-        subject: 'eng', 
-        score: '',
-        subIsChecked: false
-      },
-      {
-        subject: 'history', 
-        score: '',
-        subIsChecked: false
-      },
-      {
-        subject: 'math',
-        score: '',
-        subIsChecked: false
-      }
-      ],
-      isChecked: false
-    })
-    const newStudentIndex = studentList.length - 1; 
-    if (changesList[x].subject == "English") {
-      studentList[newStudentIndex].subjects[0].score = changesList[x].score
-    } else if (changesList[x].subject == "Math") {
-      studentList[newStudentIndex].subjects[2].score = changesList[x].score
-    } else if (changesList[x].subject == "History") {
-      studentList[newStudentIndex].subjects[1].score = changesList[x].score
-    } 
-  }
-  console.log("studentList: ", studentList)
-}
-
-const goToResultsPage = () => {
-  
-}
-
-
-
+const store = useStore()
+const studentList = store.studentList
+const changesList = store.changesList
 
 
 
@@ -136,13 +51,7 @@ const filterList = () => {
   <main>
     <!-- <FileSelector @update-students="updateStudents" @send-excel-data="sendExcelData" :studentList="studentList" :changesList="changesList"/>-->
     <div>
-      <InitialForm 
-        @update-changes-list="updateChangesList" 
-        @push-changes-to-studentList="pushChangesToStudentList" 
-        @update-students="updateStudents" 
-        @go-to-results-page="goToResultsPage"
-        :studentList="studentList" 
-        :changesList="changesList"  />
+      <InitialForm />
     </div>
     <div>
         <h1>Edits:</h1>
