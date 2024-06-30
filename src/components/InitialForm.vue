@@ -23,15 +23,16 @@ const scoreField = ref();
 const { workbook } = storeToRefs(store);
 const hot = ref();
 const hotElement = ref();
-const sheet = ref();
+const changesList = store.changesList
+//const sheet = ref();
 const studentList = store.studentList
 const sheetName = ref();
 const noFileErrorMsg = ref(false)
 const { fileUploaded } = storeToRefs(store)
 
-console.log(fileUploaded.value)
 
 const change = reactive({
+    id: changesList.length,
     name: studentName,
     subject: subjectSelect,
     score: scoreField
@@ -40,21 +41,22 @@ const change = reactive({
 const sendExcelData = (data) => {
     workbook.value = data
     sheetName.value = workbook.value.SheetNames[0]
-    sheet.value = XLSX.utils.sheet_to_json(workbook.value.Sheets[sheetName], { header: 1 });
+    //sheet.value = XLSX.utils.sheet_to_json(workbook.value.Sheets[sheetName], { header: 1 });
     store.$patch({
         workbook: workbook
     })
 }
 
 const onAddClick = () => {
-    console.log(fileUploaded.value)
+    console.log('file uploaded: ', fileUploaded.value)
     if (fileUploaded.value == true) {
         store.updateChangesList(change)
         noFileErrorMsg.value = false
-        console.log(noFileErrorMsg.value)
+        console.log(workbook.value)
+        console.log('error appear (onAddClick): ', noFileErrorMsg.value)
     } else {
         noFileErrorMsg.value = true
-        console.log(noFileErrorMsg.value)
+        console.log('error appear (onAddClick): ', noFileErrorMsg.value)
 
     }
     
@@ -67,10 +69,10 @@ const onDoneClick = () => {
         store.pushChangesToStudentList()
         router.push({ name: 'results'})
         noFileErrorMsg.value = false
-        console.log(noFileErrorMsg.value)
+        console.log('error appear (onDoneClick): ', noFileErrorMsg.value)
     } else {
         noFileErrorMsg.value = true
-        console.log(noFileErrorMsg.value)
+        console.log('error appear (onDoneClick): ', noFileErrorMsg.value)
 
     }} catch (error) {
         console.log('error PUSHCHANGES in initial form', error)
@@ -79,48 +81,44 @@ const onDoneClick = () => {
 
 const updateExcel = () => {
     console.log('updated Excel')
-    //console.log(sheet.value)
     const changesList = store.changesList
     const sheetName = workbook.value.SheetNames[0]
-    const sheet = XLSX.utils.sheet_to_json(workbook.value.Sheets[sheetName], { header: 1 });
-    
+    const sheet = XLSX.utils.sheet_to_json(workbook.value.Sheets[sheetName]);
+    console.log(sheet)
     for (let x = 0; x < changesList.length; x++) {
-        //console.log(changesList[x].name)
-        const exists = studentList.some(obj => obj.name === changesList[x].name);
+        const exists = sheet.some(obj => obj.name === changesList[x].name);
     
         if (exists == false) {
-            //console.log('we made it to exists == false')
-            const rowData = ref(['','','',''])
-            rowData.value[0] = changesList[x].name
+            const rowData = ref([])
+            rowData.value.name = changesList[x].name
     
             if (changesList[x].subject == "English") {
-                rowData.value[1] = changesList[x].score
+                rowData.value.eng = changesList[x].score
 
             } else if (changesList[x].subject == "Math") {
-                rowData.value[2] = changesList[x].score
+                rowData.value.math = changesList[x].score
 
-            //console.log(1)
             } else if (changesList[x].subject == "History") {
-                rowData.value[3] = changesList[x].score
+                rowData.value.history = changesList[x].score
             }
             sheet.push(rowData.value)
-            //console.log(rowData.value)
+            console.log('rowData value: ', rowData.value)
     } else {
             console.log(sheet)
-            const dupeArray = sheet.findIndex(arr => arr.includes(changesList[x].name)); //iterates over the array and finds the array that includes 'henry'
+            const dupeArray = sheet.findIndex(arr => arr.name == changesList[x].name); //iterates over the array and finds the array that includes 'henry'
             if (changesList[x].subject == "English") {
-                sheet[dupeArray][1] = changesList[x].score
-            } else if (changesList[x].subject == "Math") {
-                sheet[dupeArray][1] = changesList[x].score
+                sheet[dupeArray].english = changesList[x].score
             } else if (changesList[x].subject == "History") {
-                sheet[dupeArray][1] = changesList[x].score
+                sheet[dupeArray].history = changesList[x].score
+            } else if (changesList[x].subject == "Math") {
+                sheet[dupeArray].math = changesList[x].score
             }
     }
-    //console.log(sheet)
+    console.log(sheet)
 
     } 
     workbook.value.Sheets[sheetName] = XLSX.utils.json_to_sheet(sheet);
-    console.log(workbook.value)
+    //console.log(workbook.value)
     store.$patch({
         workbook: workbook
     })
