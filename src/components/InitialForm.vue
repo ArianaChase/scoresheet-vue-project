@@ -107,7 +107,7 @@ const updateExcel = () => {
             console.log(sheet)
             const dupeArray = sheet.findIndex(arr => arr.name == changesList[x].name); //iterates over the array and finds the array that includes 'henry'
             if (changesList[x].subject == "English") {
-                sheet[dupeArray].english = changesList[x].score
+                sheet[dupeArray].eng = changesList[x].score
             } else if (changesList[x].subject == "History") {
                 sheet[dupeArray].history = changesList[x].score
             } else if (changesList[x].subject == "Math") {
@@ -127,28 +127,39 @@ const updateExcel = () => {
 </script>
 
 <template>
-    <div>
-        <FileHandler @send-excel-data="sendExcelData" />
-    </div>
-    <div ref="hotElement"></div>
-    <div>
+    <div class="form">
         <h1>Add/Edit Students' grades</h1>
-            <span>Student Name: </span>
-        <input type="text" v-model="studentName">
-        <span v-if="studentName == ''" class="errorMsg"> Please enter a name</span>
         <br>
-        <span>Target Subject: </span>
-        <select v-model="subjectSelect">
-            <option disabled selected value>--</option>
-            <option value="English">English</option>
-            <option value="Math">Math</option>
-            <option value="History">History</option>
-        </select>
-        <br>
-        <span>Score: </span>
-        <input type="number" max="100" min="0" v-model="scoreField">
-        <span v-if="scoreField > 100 || typeof scoreField === 'string'" class="errorMsg"> Please enter a valid score</span>
+        <div class="form-options">
+            <div>
+                <FileHandler @send-excel-data="sendExcelData" />
+            </div>
+            <div style="height: 30px"></div>
+            <div>
+                <span>Student Name: </span>
+                <input type="text" v-model="studentName">
+                <span v-if="studentName == ''" class="errorMsg"> Please enter a name</span>
+            </div>
+            <br>
+            <div>
+                <span>Target Subject: </span>
+                <select v-model="subjectSelect">
+                    <option disabled selected value>--</option>
+                    <option value="English">English</option>
+                    <option value="History">History</option>
+                    <option value="Math">Math</option>
+                </select>
+            </div>
+            <br>
+            <div>
+                <span>Score: </span>
+                <input type="number" max="100" min="0" v-model="scoreField">
+                <span v-if="scoreField > 100 || typeof scoreField === 'string'" class="errorMsg"> Please enter a valid score</span>
+            </div>
+        </div>
+        
     </div>
+    <br>
     <div class="h-alignment">
         <button class="button" @click="onAddClick">Add</button>
         <div>
@@ -169,17 +180,14 @@ const updateExcel = () => {
     display: flex;
 }
 
-.button {
-    border: none;
-    margin: 10px;
+.form-options {
+    gap: 20px;
+}
+.form {
+    display: flex;
+    flex-direction: column;
 }
 
-.button:hover {
-    background-color: rgb(92, 92, 92);
-    color: white
-}
-.button:active {
-    background-color: rgb(148, 148, 148);
-}
+
 
 </style>

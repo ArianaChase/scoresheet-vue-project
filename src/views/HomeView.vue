@@ -48,18 +48,23 @@ const filterList = () => {
 </script>
 
 <template>
-  <main>
+  <main class="main">
     <!-- <FileSelector @update-students="updateStudents" @send-excel-data="sendExcelData" :studentList="studentList" :changesList="changesList"/>-->
-    <div>
-      <InitialForm />
+    <div class="left-panel">
+      <div class="form-box">
+        <InitialForm />
+      </div>
     </div>
-    <div>
-        <h1>Edits:</h1>
+    <div class="right-panel">
+      <div class="h-alignment">
+          <h1>Edits:</h1>
+          <button class="button">Clear</button>
+      </div>
+      <StudentItem 
+        v-for="(student, index) in changesList"
+        :student="student.name" :subject="student.subject" :score="student.score" :index="index"
+      />
     </div>
-    <StudentItem 
-      v-for="(student, index) in changesList"
-      :student="student.name" :subject="student.subject" :score="student.score" :index="index"
-    />
     <!--<p>Select students:</p>
      <StudentSelector 
       v-for="(student, index) in studentList" 
@@ -80,3 +85,64 @@ const filterList = () => {
     />-->
   </main>
 </template>
+<style>
+
+
+.main {
+  display: flex;
+  height: 100vh;
+}
+
+.left-panel {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    background-color: #F19C79;
+    height: 100%;
+    padding: 10px;
+    font-family: "Roboto", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;    
+}
+
+.right-panel {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    background-color: #CBDFBD;
+    height: 100%;
+    padding: 20px;
+    font-family: "Roboto", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+
+}
+
+.form-box {
+  margin:10px;
+  background-color: #F6F4D2;
+  padding: 20px;
+}
+.h-alignment {
+    display: flex;
+    align-items: center;
+}
+
+.button {
+    font-size: 15px;
+    height: 30px;
+    border: none;
+    margin: 10px;
+    background-color: rgb(237, 172, 107);
+}
+
+.button:hover {
+    background-color: rgb(170, 92, 63);
+    color: white
+}
+.button:active {
+    background-color: rgb(212, 156, 116);
+}
+</style>
