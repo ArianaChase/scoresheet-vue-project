@@ -18,10 +18,12 @@ const showButton = () => {
 </script>
 
 <template>
-  <div>
+  <div class="main">
     <h1>Results</h1>
-    <button @click="showButton" v-if="!showButtonIsClicked">Show</button>
-    <ResultsChart v-if="showButtonIsClicked"/>
+    <div>
+      <button class="button" @click="showButton" v-if="!showButtonIsClicked">Show</button>
+      <ResultsChart v-if="showButtonIsClicked"/>
+    </div>
   </div>
   
 </template>
@@ -29,5 +31,36 @@ const showButton = () => {
 
 
 <style lang="scss" scoped>
+
+.main {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #CBDFBD;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  font-family: "Roboto", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;    
+}
+
+.button {
+    font-size: 15px;
+    height: 30px;
+    border: none;
+    margin: 10px;
+    background-color: rgb(237, 172, 107);
+}
+
+.button:hover {
+    background-color: rgb(170, 92, 63);
+    color: white
+}
+.button:active {
+    background-color: rgb(212, 156, 116);
+}
+
 
 </style>

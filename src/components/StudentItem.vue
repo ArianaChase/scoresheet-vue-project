@@ -26,7 +26,7 @@ const props = defineProps({
 
 
 <template>
-    <div>
+    <div class="item">
        <p># of Change: {{ index + 1 }}</p>
        <p>Student name: {{ student }}</p>
        <p>Subject: {{ subject }}</p>
@@ -34,5 +34,17 @@ const props = defineProps({
     </div>
 </template>
 <style lang="scss" scoped>
+
+.item {
+    display: flex;
+    border: none;
+    background: #ececec;
+    padding-left: 20px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-right: 20px;
+    gap: 20px;
+}
+
 
 </style>
