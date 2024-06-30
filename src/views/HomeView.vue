@@ -13,9 +13,9 @@ import { storeToRefs } from 'pinia'
 const store = useStore()
 const studentList = store.studentList
 const changesList = store.changesList
+const { workbook } = storeToRefs(store)
 
-
-
+console.log(workbook.value)
 const toggleChecked =  (studentIndex) => {
   studentList[studentIndex].isChecked = !studentList[studentIndex].isChecked
 }

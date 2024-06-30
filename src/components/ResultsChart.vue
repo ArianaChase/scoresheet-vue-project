@@ -8,10 +8,9 @@ import { storeToRefs } from 'pinia'
 
 const store = useStore()
 const {workbook} = storeToRefs(store)
-console.log(workbook)
+//console.log(workbook)
 const sheetName = workbook.value.SheetNames[0];
 const sheet = XLSX.utils.sheet_to_json(workbook.value.Sheets[sheetName], {header: 1});
-const usedSheet = sheet.shift()
 const hot = ref();
 const hotElement = ref();
 

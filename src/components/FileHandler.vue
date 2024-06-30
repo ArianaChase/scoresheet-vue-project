@@ -26,7 +26,7 @@ const handleFileUpload = (event) => {
     reader.onload = (e) => { //after reading the file... (e = the results of reading)
     const data = new Uint8Array(e.target.result); //changing results into readable form
     const ogWorkbook = XLSX.read(data, { type: 'array' }); //part 2 of above
-    console.log(ogWorkbook)
+    console.log('uploaded workbook: ', ogWorkbook)
     emit('send-excel-data', ogWorkbook);
 
     //console.log(ogWorkbook)
