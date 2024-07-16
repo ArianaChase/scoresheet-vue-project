@@ -1,7 +1,13 @@
 <script setup>
-import { defineProps, defineEmits } from 'vue';
+import { ref, reactive } from 'vue';
+import * as XLSX from 'xlsx';
+import { defineEmits, defineProps } from 'vue';
+import FileHandler from './FileHandler.vue';
+import router from '@/router';
+import { useRouter, useRoute } from 'vue-router'; 
+import { useStore } from '@/stores/store.js';
+import { storeToRefs } from 'pinia'
 
-defineEmits(['toggle-checked-subject'])
 
 const props = defineProps({
     subject: {
@@ -13,6 +19,10 @@ const props = defineProps({
         required: true
     },
 })
+
+const store = useStore()
+const { subjectCheckbox } = storeToRefs(store)
+console.log(subjectCheckbox.value)
 
 </script>
 

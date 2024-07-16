@@ -7,9 +7,7 @@ import { useStore } from '@/stores/store.js';
 import { storeToRefs } from 'pinia'
 
 const props = defineProps({
-    style: {
-        required: true
-    }
+    
 })
 
 const store = useStore()
@@ -40,7 +38,8 @@ const handleFileUpload = (event) => {
 
     //console.log(ogWorkbook)
     const range = XLSX.utils.decode_range(ogWorkbook.Sheets.Table['!ref']); 
-
+    //const sheet = XLSX.utils.sheet_to_json(ogWorkbook.Sheets['Table'], {header: 1});
+    //console.log(sheet)
     for (let x = 1; x <= range.e.r; ++x) {
         rowToObject(ogWorkbook.Sheets.Table, x)
 
@@ -53,17 +52,17 @@ const handleFileUpload = (event) => {
 }
 
 const rowToObject = (sheet, rowIndex)=> {
-    try {
+
     const range = XLSX.utils.decode_range(sheet['!ref']);
     const headers = [];
     const row = {};
 
         // Get column headers
-    for (let C = range.s.c; C <= range.e.c; ++C) {
+    for (let C = range.s.c; C <= range.e.c -1; ++C) {
         const cellAddress = { c: C, r: range.s.r };
         const cellRef = XLSX.utils.encode_cell(cellAddress);
         headers.push(sheet[cellRef].v);
-        //console.log(cellAddress)
+        console.log(sheet[cellRef].v)
     }
 
         // Get cell values for the row
@@ -73,19 +72,20 @@ const rowToObject = (sheet, rowIndex)=> {
         const header = headers[C];
         row[header] = sheet[cellRef] ? sheet[cellRef].v : undefined;
     }
-    //console.log(row)
+    console.log(row)
     store.updateStudents(row)
-} catch (error) {
-    console.log('error in filehandler')
 }
-};
+//catch (error) {
+   // console.log('error in filehandler', error)
+//}
+
 </script>
 
 <template>
     <div class="h-alignment">
         <label class="custom-file-upload">
             <input type="file" ref="fileInput" @change="handleFileUpload"/>
-            Upload File
+            Import File
         </label>
         <p> {{ fileName }}</p>
     </div>

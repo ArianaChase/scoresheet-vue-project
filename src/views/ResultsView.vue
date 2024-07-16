@@ -6,14 +6,41 @@ import Handsontable from 'handsontable';
 import ResultsChart from '@/components/ResultsChart.vue';
 import { useStore } from '@/stores/store.js'
 import { storeToRefs } from 'pinia'
+import { saveAs } from 'file-saver';
+import StudentSearch from '@/components/StudentSearch.vue';
+import SubjectSelector from '@/components/SubjectSelector.vue';
+
+const store = useStore()
+
+const { workbook, subjectCheckbox } = storeToRefs(store)
+const studentList = store.studentList
+
 
 const showButtonIsClicked = ref(false)
+const newFileName = ref('')
 
 const showButton = () => {
-  showButtonIsClicked.value = true
-  return showButtonIsClicked.value
+  if (workbook.value.Sheets != undefined) {
+    showButtonIsClicked.value = true
+  } else {
+    
+  }
 }
-
+  
+for (let y = 0; y <= studentList.length - 1; ++y) {
+        for (let i = 0; i <= studentList[0].subjects.length -1; ++i) {
+            studentList[y].subjects[i].subIsChecked = false
+        }
+    }
+  
+subjectCheckbox.value = false
+  
+const saveFile = () => {
+    const saveFile = XLSX.write(workbook.value, { bookType: 'xlsx', type: 'array' });
+    console.log(saveFile)
+    saveAs(new Blob([saveFile], { type: 'application/octet-stream' }), newFileName.value + '.xlsx');
+    
+}
 
 </script>
 
@@ -23,6 +50,14 @@ const showButton = () => {
     <div>
       <button class="button" @click="showButton" v-if="!showButtonIsClicked">Show</button>
       <ResultsChart v-if="showButtonIsClicked"/>
+      <div>
+        <span v-if="showButtonIsClicked" style="font-weight: bold">Save this scoresheet: </span>
+        <input type="text" v-if="showButtonIsClicked" v-model="newFileName"/>
+        <button class="button" @click="saveFile" v-if="showButtonIsClicked">Save File</button>
+      </div>
+      <StudentSearch v-if="showButtonIsClicked"/>
+
+
     </div>
   </div>
   
