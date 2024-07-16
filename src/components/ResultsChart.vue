@@ -5,6 +5,8 @@ import { defineEmits, defineProps } from 'vue';
 import Handsontable from 'handsontable';
 import { useStore } from '@/stores/store.js';
 import { storeToRefs } from 'pinia'
+import { saveAs } from 'file-saver';
+
 
 const store = useStore()
 const {workbook} = storeToRefs(store)
@@ -14,7 +16,6 @@ const sheet = XLSX.utils.sheet_to_json(workbook.value.Sheets[sheetName], {header
 const hot = ref();
 const hotElement = ref();
 
-console.log(sheet)
 if (hot.value) {
       hot.value.destroy();
     }

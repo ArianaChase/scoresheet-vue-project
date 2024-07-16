@@ -1,10 +1,9 @@
 <script setup>
 import { ref, reactive } from 'vue'
-import StudentSelector from '@/components/StudentSelector.vue';
 import SubjectSelector from '@/components/SubjectSelector.vue';
 import { RouterLink } from 'vue-router';
 import DisplayResults from '@/components/DisplayResults.vue';
-import StudentItem from '@/components/StudentItem.vue';
+import ChangesItem from '@/components/ChangesItem.vue';
 import InitialForm from '@/components/InitialForm.vue';
 import * as XLSX from 'xlsx';
 import { useStore } from '@/stores/store.js';
@@ -15,32 +14,25 @@ const studentList = store.studentList
 const changesList = store.changesList
 const { workbook } = storeToRefs(store)
 
+
+
+
 console.log(workbook.value)
+
+const clearChanges = () => {
+  changesList.length = 0
+}
+
+
+
 const toggleChecked =  (studentIndex) => {
   studentList[studentIndex].isChecked = !studentList[studentIndex].isChecked
 }
 
-const toggleCheckedSubject = (subjectIndex) => {
-  for (let x = 0; x <= studentList.length - 1; ++x) {
-    studentList[x].subjects[subjectIndex].subIsChecked = !studentList[x].subjects[subjectIndex].subIsChecked
-  }
-}
+
 
 const resultList = reactive([])
 
-const filterList = () => {
-
-  resultList.length = 0
-  
-  for (let x = 0; x <= studentList.length - 1; ++x) {
-    if (studentList[x].isChecked == true) {
-      resultList.push(studentList[x])
-    }
-  }
-
-
-  console.log(resultList)
-}
 
 
 
@@ -49,7 +41,6 @@ const filterList = () => {
 
 <template>
   <main class="main">
-    <!-- <FileSelector @update-students="updateStudents" @send-excel-data="sendExcelData" :studentList="studentList" :changesList="changesList"/>-->
     <div class="left-panel">
       <div class="form-box">
         <InitialForm />
@@ -58,31 +49,14 @@ const filterList = () => {
     <div class="right-panel">
       <div class="h-alignment">
           <h1>Edits:</h1>
-          <button class="button">Clear</button>
+          <button class="button" @click="clearChanges">Clear</button>
       </div>
-      <StudentItem 
+      <ChangesItem 
         v-for="(student, index) in changesList"
         :student="student.name" :subject="student.subject" :score="student.score" :index="index"
       />
     </div>
-    <!--<p>Select students:</p>
-     <StudentSelector 
-      v-for="(student, index) in studentList" 
-      :student="student" :index="index"
-      @toggle-checked="toggleChecked"
-    />
-    <p>Select subjects:</p>
-    <SubjectSelector 
-      v-for="(subject, index) in studentList[0]?.subjects"
-      :subject="subject" :index="index"
-      @toggle-checked-subject="toggleCheckedSubject"
-    /> -->
-    <!--<br>
-    <button @click="filterList">Done</button> -->
-    <!--<DisplayResults
-      v-for="(student, index) in resultList"
-      :student="student" :index="index" 
-    />-->
+
   </main>
 </template>
 <style>
@@ -91,6 +65,10 @@ const filterList = () => {
 .main {
   display: flex;
   height: 100vh;
+}
+
+.errorMsg {
+    color: red;
 }
 
 .left-panel {
@@ -112,7 +90,7 @@ const filterList = () => {
     width: 50%;
     background-color: #CBDFBD;
     height: 100%;
-    padding: 20px;
+    padding: 10px;
     font-family: "Roboto", sans-serif;
     font-optical-sizing: auto;
     font-weight: 400;

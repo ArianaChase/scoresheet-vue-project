@@ -32,7 +32,7 @@ const { fileUploaded } = storeToRefs(store)
 
 
 const change = reactive({
-    id: changesList.length,
+    //id: changesList.length,
     name: studentName,
     subject: subjectSelect,
     score: scoreField
@@ -49,17 +49,9 @@ const sendExcelData = (data) => {
 
 const onAddClick = () => {
     console.log('file uploaded: ', fileUploaded.value)
-    if (fileUploaded.value == true) {
-        store.updateChangesList(change)
-        noFileErrorMsg.value = false
-        console.log(workbook.value)
-        console.log('error appear (onAddClick): ', noFileErrorMsg.value)
-    } else {
-        noFileErrorMsg.value = true
-        console.log('error appear (onAddClick): ', noFileErrorMsg.value)
-
-    }
-    
+    store.updateChangesList(change)
+    noFileErrorMsg.value = false
+    console.log(changesList)
 }    
 
 const onDoneClick = () => {
@@ -70,13 +62,63 @@ const onDoneClick = () => {
         router.push({ name: 'results'})
         noFileErrorMsg.value = false
         console.log('error appear (onDoneClick): ', noFileErrorMsg.value)
-    } else {
-        noFileErrorMsg.value = true
-        console.log('error appear (onDoneClick): ', noFileErrorMsg.value)
-
-    }} catch (error) {
+        } else {
+        makeNewExcel(),
+        store.pushChangesToStudentList()
+        router.push({ name: 'results'})
+        }
+    
+    } catch (error) {
         console.log('error PUSHCHANGES in initial form', error)
     }
+}
+
+const makeNewExcel = () => {
+    console.log('makeNewExcel good')
+    const newSheet = ref([])
+    const newWorkbook = XLSX.utils.book_new();
+
+    const changesList = store.changesList
+
+    for (let x = 0; x < changesList.length; x++) {
+        const exists = newSheet.value.some(obj => obj.name === changesList[x].name);
+
+        if (exists == false) {
+
+            const rowData = ref({name: '', English: null, Math:null, History:null})
+            rowData.value.name = changesList[x].name
+
+            if (changesList[x].subject == "English") {
+                rowData.value.English = changesList[x].score
+
+            } else if (changesList[x].subject == "Math") {
+                rowData.value.Math = changesList[x].score
+
+            } else if (changesList[x].subject == "History") {
+                rowData.value.History = changesList[x].score
+            }
+            newSheet.value.push(rowData.value)
+            console.log('rowData value: ', rowData.value)
+    } else {
+            const dupeArray = newSheet.value.findIndex(arr => arr.name == changesList[x].name); //iterates over the array and finds the array that includes 'henry'
+            if (changesList[x].subject == "English") {
+                newSheet.value[dupeArray].English = changesList[x].score
+            } else if (changesList[x].subject == "History") {
+                newSheet.value[dupeArray].History = changesList[x].score
+            } else if (changesList[x].subject == "Math") {
+                newSheet.value[dupeArray].Math = changesList[x].score
+            }
+    }}
+    console.log(newSheet.value)
+    XLSX.utils.book_append_sheet(newWorkbook, XLSX.utils.json_to_sheet(newSheet.value, 'Table'))
+
+    store.$patch({
+        workbook: newWorkbook
+    })
+    fileUploaded.value = true    
+    console.log(workbook.value)
+    
+
 }
 
 const updateExcel = () => {
@@ -93,13 +135,13 @@ const updateExcel = () => {
             rowData.value.name = changesList[x].name
     
             if (changesList[x].subject == "English") {
-                rowData.value.eng = changesList[x].score
+                rowData.value.English = changesList[x].score
 
             } else if (changesList[x].subject == "Math") {
-                rowData.value.math = changesList[x].score
+                rowData.value.Math = changesList[x].score
 
             } else if (changesList[x].subject == "History") {
-                rowData.value.history = changesList[x].score
+                rowData.value.History = changesList[x].score
             }
             sheet.push(rowData.value)
             console.log('rowData value: ', rowData.value)
@@ -107,11 +149,11 @@ const updateExcel = () => {
             console.log(sheet)
             const dupeArray = sheet.findIndex(arr => arr.name == changesList[x].name); //iterates over the array and finds the array that includes 'henry'
             if (changesList[x].subject == "English") {
-                sheet[dupeArray].eng = changesList[x].score
+                sheet[dupeArray].English = changesList[x].score
             } else if (changesList[x].subject == "History") {
-                sheet[dupeArray].history = changesList[x].score
+                sheet[dupeArray].History = changesList[x].score
             } else if (changesList[x].subject == "Math") {
-                sheet[dupeArray].math = changesList[x].score
+                sheet[dupeArray].Math = changesList[x].score
             }
     }
     console.log(sheet)
@@ -136,13 +178,13 @@ const updateExcel = () => {
             </div>
             <div style="height: 30px"></div>
             <div>
-                <span>Student Name: </span>
+                <span><b>Student Name: </b></span>
                 <input type="text" v-model="studentName">
                 <span v-if="studentName == ''" class="errorMsg"> Please enter a name</span>
             </div>
             <br>
             <div>
-                <span>Target Subject: </span>
+                <span><b>Target Subject: </b></span>
                 <select v-model="subjectSelect">
                     <option disabled selected value>--</option>
                     <option value="English">English</option>
@@ -152,7 +194,7 @@ const updateExcel = () => {
             </div>
             <br>
             <div>
-                <span>Score: </span>
+                <span><b>Score: </b></span>
                 <input type="number" max="100" min="0" v-model="scoreField">
                 <span v-if="scoreField > 100 || typeof scoreField === 'string'" class="errorMsg"> Please enter a valid score</span>
             </div>
@@ -172,9 +214,6 @@ const updateExcel = () => {
 
 <style lang="scss" scoped>
 
-.errorMsg {
-    color: red;
-}
 
 .h-alignment {
     display: flex;
@@ -187,7 +226,5 @@ const updateExcel = () => {
     display: flex;
     flex-direction: column;
 }
-
-
 
 </style>

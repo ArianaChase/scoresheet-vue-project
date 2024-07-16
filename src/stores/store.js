@@ -6,43 +6,54 @@ export const useStore = defineStore('counter', () => {
   const changesList = reactive([])
   const workbook = ref({});
   const fileUploaded = ref(false)
+  const subjectCheckbox = ref(false)
   
   const updateStudents = (row) => {
     try { 
+      console.log(row)
+      if (row.name == undefined) {
+
+      } else {
       studentList.push({
       id: studentList.length + 1,
       name: row.name,
       subjects: [
         {
-          subject: 'eng', 
-          score: row.eng,
+          subject: 'English', 
+          score: row.English,
           subIsChecked: false
         },
         {
-          subject: 'history', 
-          score: row.history,
+          subject: 'History', 
+          score: row.History,
           subIsChecked: false
         },
         {
-          subject: 'math',
-          score: row.math,
+          subject: 'Math',
+          score: row.Math,
           subIsChecked: false
         }
       ],
       isChecked: false
     })
-    } catch (error) {
+    }} catch (error) {
       console.log('error in studentList pushing', error)
     }
   };
 
   const updateChangesList = (changeObj) => {
+    if (changeObj.score > 100 || typeof changeObj.score === String) {
+      console.log('invalid change')
+    } else {
     changesList.push({
-      id: changeObj.id,
+      //id: changeObj.id,
       name: changeObj.name,
       subject: changeObj.subject,
       score: changeObj.score
-    })  
+    })
+  }
+    console.log('update changeslist: ', changesList)
+  
   }
 
   const pushChangesToStudentList = () => {
@@ -61,17 +72,17 @@ export const useStore = defineStore('counter', () => {
           name: stuName,
           subjects: [
           {
-            subject: 'eng', 
+            subject: 'English', 
             score: '',
             subIsChecked: false
           },
           {
-            subject: 'history', 
+            subject: 'History', 
             score: '',
             subIsChecked: false
           },
           {
-            subject: 'math',
+            subject: 'Math',
             score: '',
             subIsChecked: false
           }
@@ -107,5 +118,5 @@ export const useStore = defineStore('counter', () => {
     console.log("studentList: ", studentList)
     changesList.length = 0
   }
-  return { studentList, changesList, workbook, fileUploaded, updateStudents, updateChangesList, pushChangesToStudentList }
+  return { studentList, changesList, workbook, fileUploaded, subjectCheckbox, updateStudents, updateChangesList, pushChangesToStudentList }
 })
