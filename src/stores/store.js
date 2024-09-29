@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, reactive } from 'vue'
+import axios from 'axios';
 
 export const useStore = defineStore('counter', () => {
   const studentList = reactive([])
@@ -7,7 +8,7 @@ export const useStore = defineStore('counter', () => {
   const workbook = ref({});
   const fileUploaded = ref(false)
   const subjectCheckbox = ref(false)
-  
+  console.log('1')
   const updateStudents = (row) => {
     try { 
       console.log(row)
@@ -49,23 +50,57 @@ export const useStore = defineStore('counter', () => {
       //id: changeObj.id,
       name: changeObj.name,
       subject: changeObj.subject,
-      score: changeObj.score
+      score: changeObj.score,
+      id: changeObj.id
     })
   }
     console.log('update changeslist: ', changesList)
   
   }
 
-  const pushChangesToStudentList = () => {
+  const pushChangesToStudentList = async () => {
     console.log('pushed change successfully')
     console.log("changesList: ", changesList)
     console.log('workbook:', workbook.value)
-
+    const exists = ref();
     for (let x = 0; x < changesList.length; x++) {
-      const stuName = changesList[x].name
 
-      const exists = studentList.some(obj => obj.name === stuName)
+      try {
+        const response = await axios.get('http://localhost/scoresheet-backend/scoresheet_processing.php', {
+          params: {  
+            action: "exists",
+            student_id: changesList[x].id, //specify the items in $data array
+            student_name: changesList[x].name,
+          }
+        });
 
+        console.log(response.data.exist)
+        exists.value = response.data.exist
+
+    } catch (error) {
+        console.log(error)
+}
+
+if (exists.value == false) {
+  try {
+    const response = await axios.post('http://localhost/scoresheet-backend/scoresheet_processing.php', {
+        
+      action: "addNewStudent",
+      student_id: changesList[x].id, 
+      student_name: changesList[x].name,
+      subject: changesList[x].subject,
+      score: changesList[x].score
+      
+    });
+
+    console.log(response.data)
+    
+
+  } catch (error) {
+      console.log(error)
+  }
+}
+/* 
       if (exists == false) {
         studentList.push({
           id: studentList.length + 1,
@@ -114,9 +149,11 @@ export const useStore = defineStore('counter', () => {
 
 
       }
+
+      
       
     console.log("studentList: ", studentList)
-    changesList.length = 0
+    changesList.length = 0 */
   }
   return { studentList, changesList, workbook, fileUploaded, subjectCheckbox, updateStudents, updateChangesList, pushChangesToStudentList }
-})
+}})

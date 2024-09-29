@@ -17,6 +17,22 @@ const props = defineProps({
 
 })
 
+const calculateAverage = () => {
+    let average = 0
+    let count = 0
+    for (let x = 0; x < props.result.subjects.length; ++x) {
+        if (props.result.subjects[x].subIsChecked) {
+            average += props.result.subjects[x].score
+            count += 1
+        }
+    }
+    console.log(average / count)
+
+    return average / count
+}
+
+
+
 </script>
 
 <template>
@@ -27,6 +43,7 @@ const props = defineProps({
             {{ result.subjects[index].subject }}: {{ result.subjects[index].score }}
         </span>
         </p>
+        <p>Average: {{ calculateAverage() }}</p>
     </div>
     
 </template>

@@ -5,6 +5,7 @@ import { defineEmits, defineProps } from 'vue';
 import Handsontable from 'handsontable';
 import { useStore } from '@/stores/store.js';
 import { storeToRefs } from 'pinia'
+import axios from 'axios';
 
 const props = defineProps({
     
@@ -30,18 +31,17 @@ const handleFileUpload = (event) => {
     console.log(fileName)
     const reader = new FileReader();
 
-    reader.onload = (e) => { //after reading the file... (e = the results of reading)
+    reader.onload = async (e) =>  { //after reading the file... (e = the results of reading) //ensures that the rowToObject function is done running (including sending dadta to php) before going to the second row
     const data = new Uint8Array(e.target.result); //changing results into readable form
     const ogWorkbook = XLSX.read(data, { type: 'array' }); //part 2 of above
     console.log('uploaded workbook: ', ogWorkbook)
     emit('send-excel-data', ogWorkbook);
 
-    //console.log(ogWorkbook)
+  
     const range = XLSX.utils.decode_range(ogWorkbook.Sheets.Table['!ref']); 
-    //const sheet = XLSX.utils.sheet_to_json(ogWorkbook.Sheets['Table'], {header: 1});
-    //console.log(sheet)
+
     for (let x = 1; x <= range.e.r; ++x) {
-        rowToObject(ogWorkbook.Sheets.Table, x)
+        await rowToObject(ogWorkbook.Sheets.Table, x)
 
     }
     
@@ -51,14 +51,14 @@ const handleFileUpload = (event) => {
 
 }
 
-const rowToObject = (sheet, rowIndex)=> {
+const rowToObject = async (sheet, rowIndex)=> {
 
     const range = XLSX.utils.decode_range(sheet['!ref']);
     const headers = [];
     const row = {};
 
         // Get column headers
-    for (let C = range.s.c; C <= range.e.c -1; ++C) {
+    for (let C = range.s.c; C <= range.e.c; ++C) {
         const cellAddress = { c: C, r: range.s.r };
         const cellRef = XLSX.utils.encode_cell(cellAddress);
         headers.push(sheet[cellRef].v);
@@ -72,8 +72,32 @@ const rowToObject = (sheet, rowIndex)=> {
         const header = headers[C];
         row[header] = sheet[cellRef] ? sheet[cellRef].v : undefined;
     }
+
     console.log(row)
-    store.updateStudents(row)
+    console.log("this is a loop for: ", row.name)
+
+    try {
+        const response = await axios.post('http://localhost/scoresheet-backend/scoresheet_processing.php', {
+            action: "process_file", //sent POST request to processing file to update student database
+            student_id: rowIndex, //specify the items in $data array
+            student_name: row.name,
+            student_math: row.Math,
+            student_english: row.English,
+            student_history: row.History,
+            student_amt: range.e.r //how many students are there (last row index)
+        }, {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+        });
+
+        console.log(response.data)
+        console.log("this math score: ", row.Math)
+
+
+    } catch (error) {
+        console.log(error)
+}
 }
 //catch (error) {
    // console.log('error in filehandler', error)
