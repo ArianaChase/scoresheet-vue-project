@@ -11,6 +11,7 @@
   "dependencies": {
     "@mescius/spread-sheets": "^17.0.8",
     "@mescius/spread-sheets-io": "^17.0.8",
+    "axios": "^1.7.7",
     "file-saver": "^2.0.5",
     "handsontable": "^14.3.0",
     "jquery": "^3.7.1",

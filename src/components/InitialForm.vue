@@ -7,7 +7,8 @@ import FileHandler from './FileHandler.vue';
 import router from '@/router';
 import { useRouter, useRoute } from 'vue-router'; 
 import { useStore } from '@/stores/store.js';
-import { storeToRefs } from 'pinia'
+import { storeToRefs } from 'pinia';
+import axios from 'axios';
 
 const store = useStore()
 
@@ -29,30 +30,46 @@ const studentList = store.studentList
 const sheetName = ref();
 const noFileErrorMsg = ref(false)
 const { fileUploaded } = storeToRefs(store)
-
+const student_count = ref();
 
 const change = reactive({
     //id: changesList.length,
     name: studentName,
     subject: subjectSelect,
-    score: scoreField
+    score: scoreField,
+    id: student_count.value + 1
 }) 
 
 const sendExcelData = (data) => {
     workbook.value = data
     sheetName.value = workbook.value.SheetNames[0]
-    //sheet.value = XLSX.utils.sheet_to_json(workbook.value.Sheets[sheetName], { header: 1 });
     store.$patch({
         workbook: workbook
     })
 }
 
-const onAddClick = () => {
-    console.log('file uploaded: ', fileUploaded.value)
+const onAddClick = async () => {
     store.updateChangesList(change)
+    try {
+        const response = await axios.get('http://localhost/scoresheet-backend/scoresheet_processing.php', {
+            params: {
+                action: "student_count",
+            }, 
+        },{
+        headers: {
+            'Content-Type': 'application/json'
+        }
+        });
+
+        console.log(response.data)
+        student_count.value = response.data.count;
+
+
+    } catch (error) {
+        console.log(error)
     noFileErrorMsg.value = false
     console.log(changesList)
-}    
+}}    
 
 const onDoneClick = () => {
     try {

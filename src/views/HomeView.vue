@@ -8,16 +8,20 @@ import InitialForm from '@/components/InitialForm.vue';
 import * as XLSX from 'xlsx';
 import { useStore } from '@/stores/store.js';
 import { storeToRefs } from 'pinia'
+import axios from 'axios';
 
 const store = useStore()
 const studentList = store.studentList
 const changesList = store.changesList
 const { workbook } = storeToRefs(store)
+console.log('2')
 
 
 
 
 console.log(workbook.value)
+
+console.log('3')
 
 const clearChanges = () => {
   changesList.length = 0
